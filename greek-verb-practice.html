@@ -195,15 +195,15 @@
         }
 
         function checkAnswer() {
-            const userAnswer = document.getElementById('userAnswer').value.trim();
+            const userAnswer = document.getElementById('userAnswer').value.trim().toLowerCase();
             const answerElement = document.getElementById('answer');
-            const correctAnswer = currentQuestion.answer;
+            const correctAnswer = currentQuestion.answer.toLowerCase();
             
             if (userAnswer === correctAnswer) {
                 answerElement.textContent = "✓ Correct!";
                 answerElement.className = "answer correct";
             } else {
-                answerElement.textContent = `✗ Incorrect. The correct answer is: ${correctAnswer}`;
+                answerElement.textContent = `✗ Incorrect. The correct answer is: ${currentQuestion.answer}`;
                 answerElement.className = "answer incorrect";
             }
             answerElement.style.display = 'block';
