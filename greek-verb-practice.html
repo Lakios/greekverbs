@@ -2,27 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Greek Verb Practice</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
+            margin: 0;
+            padding: 10px;
             background-color: #f0f0f0;
         }
         .container {
             background-color: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+                margin: 0;
+                border-radius: 0;
+            }
+            body {
+                padding: 0;
+            }
         }
         .question {
             font-size: 24px;
             margin-bottom: 20px;
-            padding: 20px;
+            padding: 15px;
             background-color: #e9ecef;
             border-radius: 4px;
+        }
+        .verb-link {
+            color: #007bff;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .verb-details {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .verb-details table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .verb-details th, .verb-details td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        .verb-details th {
+            background-color: #e9ecef;
+        }
+        .input-area {
+            margin: 15px 0;
+        }
+        .answer-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
         .button {
             background-color: #007bff;
@@ -32,6 +79,8 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            width: 100%;
+            margin: 5px 0;
         }
         .button:hover {
             background-color: #0056b3;
@@ -40,12 +89,10 @@
             font-size: 20px;
             margin-top: 20px;
             padding: 15px;
-            background-color: #e2ffe2;
             border-radius: 4px;
             display: none;
         }
         .next {
-            margin-top: 20px;
             background-color: #28a745;
         }
         .error {
@@ -55,6 +102,14 @@
             border-radius: 4px;
             display: none;
         }
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
@@ -62,6 +117,10 @@
         <h1>Greek Verb Practice</h1>
         <div class="error" id="error"></div>
         <div class="question" id="question"></div>
+        <div class="verb-details" id="verbDetails"></div>
+        <div class="input-area">
+            <input type="text" class="answer-input" id="userAnswer" placeholder="Type your answer here" onkeypress="if(event.key === 'Enter') checkAnswer()">
+        </div>
         <button class="button" onclick="checkAnswer()">Check</button>
         <div class="answer" id="answer"></div>
         <button class="button next" onclick="nextQuestion()">Next Question</button>
@@ -71,6 +130,7 @@
         const subjects = ["I", "He", "We", "You", "Multiple You", "They"];
         const tenses = ["present", "past", "future"];
         let verbs = {};
+        let currentQuestion = {};
 
         async function loadVerbs() {
             try {
@@ -96,6 +156,23 @@
             }
         }
 
+        function showVerbDetails(verb) {
+            const detailsDiv = document.getElementById('verbDetails');
+            let html = '<table><tr><th>Subject</th><th>Present</th><th>Past</th><th>Future</th></tr>';
+            
+            subjects.forEach(subject => {
+                html += `<tr><td>${subject}</td>`;
+                tenses.forEach(tense => {
+                    html += `<td>${verbs[verb][subject][tense]}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</table>';
+            
+            detailsDiv.innerHTML = html;
+            detailsDiv.style.display = detailsDiv.style.display === 'none' ? 'block' : 'none';
+        }
+
         function generateQuestion() {
             const subject = subjects[Math.floor(Math.random() * subjects.length)];
             const tense = tenses[Math.floor(Math.random() * tenses.length)];
@@ -109,14 +186,26 @@
                 answer: verbs[verb][subject][tense]
             };
 
-            document.getElementById('question').textContent = 
-                `${currentQuestion.subject} + ${currentQuestion.tense} + ${currentQuestion.verb}`;
+            document.getElementById('question').innerHTML = 
+                `${currentQuestion.subject} + ${currentQuestion.tense} + <span class="verb-link" onclick="showVerbDetails('${verb}')">${currentQuestion.verb}</span>`;
             document.getElementById('answer').style.display = 'none';
+            document.getElementById('verbDetails').style.display = 'none';
+            document.getElementById('userAnswer').value = '';
+            document.getElementById('userAnswer').focus();
         }
 
         function checkAnswer() {
+            const userAnswer = document.getElementById('userAnswer').value.trim();
             const answerElement = document.getElementById('answer');
-            answerElement.textContent = currentQuestion.answer;
+            const correctAnswer = currentQuestion.answer;
+            
+            if (userAnswer === correctAnswer) {
+                answerElement.textContent = "✓ Correct!";
+                answerElement.className = "answer correct";
+            } else {
+                answerElement.textContent = `✗ Incorrect. The correct answer is: ${correctAnswer}`;
+                answerElement.className = "answer incorrect";
+            }
             answerElement.style.display = 'block';
         }
 
@@ -124,7 +213,6 @@
             generateQuestion();
         }
 
-        // Initialize by loading verbs
         loadVerbs();
     </script>
 </body>
